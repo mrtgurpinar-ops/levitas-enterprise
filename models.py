@@ -2,7 +2,10 @@ from datetime import datetime
 from typing import Optional, List
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, JSON
 from pydantic import BaseModel, EmailStr, Field
-from database import Base
+try:
+    from database import Base
+except ModuleNotFoundError:
+    from projects.levitas_enterprise.database import Base
 
 # SQLAlchemy Database Model
 class Inquiry(Base):

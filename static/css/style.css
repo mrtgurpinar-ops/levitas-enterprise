@@ -522,10 +522,24 @@ a {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.84rem;
   line-height: 1.75;
-  min-height: 390px;
+  height: 400px;
+  min-height: 400px;
+  max-height: 400px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+}
+
+.terminal-body::-webkit-scrollbar {
+  width: 4px;
+}
+.terminal-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+.terminal-body::-webkit-scrollbar-thumb {
+  background: rgba(229, 193, 88, 0.3);
+  border-radius: 4px;
 }
 
 .t-line {
@@ -1255,7 +1269,11 @@ a {
   }
 
   .terminal-body {
-    min-height: 270px;
+    height: 320px;
+    min-height: 320px;
+    max-height: 320px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 1.15rem;
     font-size: 0.75rem;
     line-height: 1.6;

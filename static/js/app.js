@@ -63,6 +63,7 @@ function initLiveTerminal() {
             <span class="t-text muted">Pipeline auto-optimized. Listening for next event...</span>
           </div>
         `;
+        terminalBody.scrollTop = 0;
         lineIndex = 0;
         timerId = setTimeout(addTerminalLine, 1200);
       }, 3500);
