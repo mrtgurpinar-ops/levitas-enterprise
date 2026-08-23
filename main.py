@@ -70,7 +70,7 @@ except Exception as e:
     templates = None
 
 # App configuration
-VERSION = "v7.42.0"
+VERSION = "v7.43.0"
 WHATSAPP_PHONE = os.environ.get("WHATSAPP_PHONE", "905555105635")
 CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "mrtgurpinar@gmail.com")
 ADMIN_KEY = os.environ.get("ADMIN_KEY", "levitas2026")

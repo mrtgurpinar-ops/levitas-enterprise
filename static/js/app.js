@@ -6,7 +6,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   initNavbarScroll();
   initLiveTerminal();
-  initMobileMenu();
   initMobileBottomNav();
 });
 
@@ -90,59 +89,7 @@ function initLiveTerminal() {
   setTimeout(addTerminalLine, 500);
 }
 
-/* 3. Mobile Navigation Drawer Controller */
-function initMobileMenu() {
-  const toggleBtn = document.getElementById('menuToggle');
-  const navWrapper = document.getElementById('navLinksWrapper');
-  const navItems = document.querySelectorAll('.nav-links-wrapper a');
-
-  if (!toggleBtn || !navWrapper) return;
-
-  function closeMenu() {
-    toggleBtn.classList.remove('active');
-    navWrapper.classList.remove('active');
-    document.body.classList.remove('no-scroll');
-  }
-
-  function openMenu() {
-    toggleBtn.classList.add('active');
-    navWrapper.classList.add('active');
-    document.body.classList.add('no-scroll');
-  }
-
-  toggleBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isActive = navWrapper.classList.contains('active');
-    if (isActive) {
-      closeMenu();
-    } else {
-      openMenu();
-    }
-  });
-
-  // Close menu on nav item click
-  navItems.forEach(link => {
-    link.addEventListener('click', () => {
-      closeMenu();
-    });
-  });
-
-  // Close menu when clicking outside
-  document.addEventListener('click', (e) => {
-    if (navWrapper.classList.contains('active') && !navWrapper.contains(e.target) && !toggleBtn.contains(e.target)) {
-      closeMenu();
-    }
-  });
-
-  // Close on Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && navWrapper.classList.contains('active')) {
-      closeMenu();
-    }
-  });
-}
-
-/* 4. Mobile Bottom Navigation Active Tab Tracker & Smooth Navigation */
+/* 3. Mobile Bottom Navigation Active Tab Tracker & Smooth Navigation */
 function initMobileBottomNav() {
   const bottomNavItems = document.querySelectorAll('.mobile-bottom-nav .bottom-nav-item');
   if (!bottomNavItems.length) return;
