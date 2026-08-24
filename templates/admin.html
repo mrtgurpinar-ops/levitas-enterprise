@@ -101,7 +101,7 @@
     
     <!-- Top Header -->
     <header style="background: var(--bg-surface); border-bottom: 1px solid var(--border-dim); padding: 1rem 0;">
-      <div class="admin-container" style="display: flex; align-items: center; justify-content: space-between;">
+      <div class="admin-container" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 1rem;">
           <div style="width: 42px; height: 42px;">
             <svg class="brand-emblem-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -119,24 +119,48 @@
             </svg>
           </div>
           <div>
-            <h1 style="font-size: 1.15rem; font-weight: 800; letter-spacing: 0.5px;">LEVITAS ENTERPRISE <span style="color: var(--cyan-400); font-weight: 600; font-size: 0.85rem;">— Talep Yönetim Portalı</span></h1>
-            <span style="font-size: 0.72rem; color: var(--gold-500); letter-spacing: 0.8px;">A LEVITAS HOLDINGS SUBSIDIARY</span>
+            <h1 style="font-size: 1.15rem; font-weight: 800; letter-spacing: 0.5px;">LEVITAS ENTERPRISE <span style="color: var(--cyan-400); font-weight: 600; font-size: 0.85rem;">— Executive Control Panel</span></h1>
+            <span style="font-size: 0.72rem; color: var(--gold-500); letter-spacing: 0.8px;">A LEVITAS HOLDINGS SUBSIDIARY ({{ version }})</span>
           </div>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <button onclick="fetchInquiries()" class="btn btn-secondary btn-sm">🔄 Yenile</button>
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <div style="display: flex; background: rgba(0,0,0,0.4); padding: 3px; border-radius: var(--radius-md); border: 1px solid var(--border-dim);">
+            <button onclick="switchTab('inquiries')" id="tab-btn-inquiries" class="btn btn-sm" style="background: var(--electric-cyan); color: #000; font-weight: 700;">📋 Müşteri Talepleri</button>
+            <button onclick="switchTab('analytics')" id="tab-btn-analytics" class="btn btn-sm btn-secondary" style="border: none;">📊 Ziyaretçi Analitiği</button>
+          </div>
+          <button onclick="refreshAllData()" class="btn btn-secondary btn-sm">🔄 Yenile</button>
           <button onclick="exportCSV()" class="btn btn-secondary btn-sm">📥 CSV İndir</button>
-          <a href="/" target="_blank" class="btn btn-secondary btn-sm">🌐 Canlı Siteyi Aç</a>
+          <a href="/" target="_blank" class="btn btn-secondary btn-sm">🌐 Canlı Site</a>
           <button onclick="logoutAdmin()" class="btn btn-sm" style="background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3);">Çıkış</button>
         </div>
       </div>
     </header>
 
-    <!-- Stats & Filters -->
-    <div class="admin-container">
+    <!-- TAB 1: INQUIRIES MANAGEMENT -->
+    <div id="tab-content-inquiries" class="admin-container">
       
-      <div style="display: flex; align-items: center; justify-content: space-between; margin: 2rem 0 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <!-- Top Metrics Bar -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-dim); padding: 1.25rem; border-radius: var(--radius-lg);">
+          <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">TOPLAM TALEP</div>
+          <div id="kpi-total-inquiries" style="font-size: 1.8rem; font-weight: 800; color: var(--gold-400); margin-top: 0.25rem;">0</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-dim); padding: 1.25rem; border-radius: var(--radius-lg);">
+          <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">YENİ TALEPLER</div>
+          <div id="kpi-new-inquiries" style="font-size: 1.8rem; font-weight: 800; color: var(--electric-cyan); margin-top: 0.25rem;">0</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-dim); padding: 1.25rem; border-radius: var(--radius-lg);">
+          <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">TEKLİF AŞAMASINDA</div>
+          <div id="kpi-offer-inquiries" style="font-size: 1.8rem; font-weight: 800; color: #f59e0b; margin-top: 0.25rem;">0</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-dim); padding: 1.25rem; border-radius: var(--radius-lg);">
+          <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">ONAYLANAN PROJELER</div>
+          <div id="kpi-approved-inquiries" style="font-size: 1.8rem; font-weight: 800; color: var(--emerald-400); margin-top: 0.25rem;">0</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin: 1.5rem 0 1rem; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;" id="status-filter-buttons">
           <button class="btn btn-secondary btn-sm active-filter" data-status="ALL" onclick="filterByStatus('ALL')">Tümü (<span id="count-all">0</span>)</button>
           <button class="btn btn-secondary btn-sm" data-status="YENİ" onclick="filterByStatus('YENİ')">Yeni (<span id="count-new">0</span>)</button>
@@ -173,6 +197,90 @@
 
     </div>
 
+    <!-- TAB 2: VISITOR & CONVERSION ANALYTICS -->
+    <div id="tab-content-analytics" class="admin-container" style="display: none; margin-top: 1.5rem;">
+      
+      <!-- Analytics KPI Row -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-dim); padding: 1.25rem; border-radius: var(--radius-lg);">
+          <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">TOPLAM SAYFA GÖRÜNTÜLEME</div>
+          <div id="ana-pageviews" style="font-size: 1.8rem; font-weight: 800; color: var(--cyan-400); margin-top: 0.25rem;">0</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Ziyaretçi Trafiği</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-dim); padding: 1.25rem; border-radius: var(--radius-lg);">
+          <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">HESAPLAYICI ETKİLEŞİMİ</div>
+          <div id="ana-calc-uses" style="font-size: 1.8rem; font-weight: 800; color: var(--gold-400); margin-top: 0.25rem;">0</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Bütçe Hesaplayanlar</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-dim); padding: 1.25rem; border-radius: var(--radius-lg);">
+          <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">TALEP FORM GÖNDERİMLERİ</div>
+          <div id="ana-form-submits" style="font-size: 1.8rem; font-weight: 800; color: var(--emerald-400); margin-top: 0.25rem;">0</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Doğrudan Başvurular</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-dim); padding: 1.25rem; border-radius: var(--radius-lg);">
+          <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">DÖNÜŞÜM ORANI (CONVERSION)</div>
+          <div id="ana-conversion-rate" style="font-size: 1.8rem; font-weight: 800; color: #a855f7; margin-top: 0.25rem;">%0.0</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Ziyaretçi ➔ Müşteri</div>
+        </div>
+      </div>
+
+      <!-- Analytics Sub Grid: Architecture Breakdown & Device Share -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        
+        <!-- Architecture Distribution -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-dim); padding: 1.5rem; border-radius: var(--radius-lg);">
+          <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary);">🎯 Proje Mimarisi İlgi Dağılımı</h3>
+          <div id="arch-bars-container" style="display: flex; flex-direction: column; gap: 0.8rem;">
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Henüz veri toplanıyor...</p>
+          </div>
+        </div>
+
+        <!-- Device Share -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-dim); padding: 1.5rem; border-radius: var(--radius-lg);">
+          <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary);">📱 Ziyaretçi Cihaz Dağılımı</h3>
+          <div style="display: flex; align-items: center; justify-content: space-around; margin-top: 1.5rem;">
+            <div style="text-align: center;">
+              <div style="font-size: 2rem;">📱</div>
+              <div id="device-mobile-val" style="font-size: 1.3rem; font-weight: 800; color: var(--electric-cyan); margin-top: 0.25rem;">0</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Mobil Cihazlar</div>
+            </div>
+            <div style="height: 50px; width: 1px; background: var(--border-dim);"></div>
+            <div style="text-align: center;">
+              <div style="font-size: 2rem;">💻</div>
+              <div id="device-desktop-val" style="font-size: 1.3rem; font-weight: 800; color: var(--gold-400); margin-top: 0.25rem;">0</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Masaüstü / Laptop</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Visitor Event Stream -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-dim); border-radius: var(--radius-lg); padding: 1.5rem;">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary);">⚡ Canlı Ziyaretçi Etkileşim Akışı</h3>
+        <div style="overflow-x: auto;">
+          <table class="inquiry-table" style="margin-top: 0;">
+            <thead>
+              <tr>
+                <th>Zaman</th>
+                <th>Olay Türü</th>
+                <th>Yol</th>
+                <th>Cihaz</th>
+                <th>IP Adresi</th>
+                <th>Detay</th>
+              </tr>
+            </thead>
+            <tbody id="analytics-events-tbody">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Olaylar yükleniyor...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
   <!-- Detail & Edit Modal -->
@@ -195,6 +303,7 @@
     let activeAdminKey = localStorage.getItem('levitas_admin_key') || '';
     let allInquiries = [];
     let currentFilter = 'ALL';
+    let currentTab = 'inquiries';
 
     document.addEventListener('DOMContentLoaded', () => {
       if (activeAdminKey) {
@@ -211,6 +320,35 @@
       });
     });
 
+    function switchTab(tab) {
+      currentTab = tab;
+      const btnInq = document.getElementById('tab-btn-inquiries');
+      const btnAna = document.getElementById('tab-btn-analytics');
+      const tabInq = document.getElementById('tab-content-inquiries');
+      const tabAna = document.getElementById('tab-content-analytics');
+
+      if (tab === 'inquiries') {
+        btnInq.style.background = 'var(--electric-cyan)';
+        btnInq.style.color = '#000';
+        btnInq.classList.remove('btn-secondary');
+        btnAna.style.background = 'transparent';
+        btnAna.style.color = 'var(--text-secondary)';
+        btnAna.classList.add('btn-secondary');
+        tabInq.style.display = 'block';
+        tabAna.style.display = 'none';
+      } else {
+        btnAna.style.background = 'var(--electric-cyan)';
+        btnAna.style.color = '#000';
+        btnAna.classList.remove('btn-secondary');
+        btnInq.style.background = 'transparent';
+        btnInq.style.color = 'var(--text-secondary)';
+        btnInq.classList.add('btn-secondary');
+        tabInq.style.display = 'none';
+        tabAna.style.display = 'block';
+        fetchAnalytics();
+      }
+    }
+
     async function testAuthAndLoad() {
       try {
         const res = await fetch(`/api/admin/inquiries?key=${encodeURIComponent(activeAdminKey)}`);
@@ -223,13 +361,20 @@
         document.getElementById('admin-dashboard-screen').style.display = 'block';
         
         renderInquiries();
+        fetchAnalytics();
       } catch (err) {
         localStorage.removeItem('levitas_admin_key');
         activeAdminKey = '';
         document.getElementById('auth-gate-screen').style.display = 'block';
         document.getElementById('admin-dashboard-screen').style.display = 'none';
-        showToast('Hatalı Yönetici Anahtarı!', 'error');
+        showToast('Hatalı Yönetici Anahtarı / Şifresi!', 'error');
       }
+    }
+
+    async function refreshAllData() {
+      await fetchInquiries();
+      await fetchAnalytics();
+      showToast('Tüm veriler yenilendi', 'success');
     }
 
     async function fetchInquiries() {
@@ -238,9 +383,71 @@
         if (!res.ok) throw new Error('Veriler alınamadı');
         allInquiries = await res.json();
         renderInquiries();
-        showToast('Talepler güncellendi', 'success');
       } catch (err) {
         showToast(err.message, 'error');
+      }
+    }
+
+    async function fetchAnalytics() {
+      try {
+        const res = await fetch(`/api/admin/analytics/summary?key=${encodeURIComponent(activeAdminKey)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // Update Analytics KPIs
+        document.getElementById('ana-pageviews').textContent = data.pageviews || 0;
+        document.getElementById('ana-calc-uses').textContent = data.calc_uses || 0;
+        document.getElementById('ana-form-submits').textContent = data.form_submits || 0;
+        document.getElementById('ana-conversion-rate').textContent = `%${data.conversion_rate || 0}`;
+
+        // Devices
+        document.getElementById('device-mobile-val').textContent = data.device_breakdown?.mobile || 0;
+        document.getElementById('device-desktop-val').textContent = data.device_breakdown?.desktop || 0;
+
+        // Architecture bars
+        const archContainer = document.getElementById('arch-bars-container');
+        if (archContainer && data.arch_counts) {
+          const totalInq = data.total_inquiries || 1;
+          const entries = Object.entries(data.arch_counts);
+          if (entries.length > 0) {
+            archContainer.innerHTML = entries.map(([name, count]) => {
+              const pct = Math.round((count / totalInq) * 100);
+              return `
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:0.3rem;">
+                    <span>${name}</span>
+                    <strong style="color:var(--gold-400);">${count} Talep (%${pct})</strong>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.05); height:6px; border-radius:3px; overflow:hidden;">
+                    <div style="background:var(--cyan-400); width:${pct}%; height:100%; border-radius:3px;"></div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        // Recent events table
+        const evTbody = document.getElementById('analytics-events-tbody');
+        if (evTbody && data.recent_events) {
+          if (!data.recent_events.length) {
+            evTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">Henüz kayıtlı olay yok.</td></tr>`;
+          } else {
+            evTbody.innerHTML = data.recent_events.map(ev => `
+              <tr>
+                <td><small style="color:var(--text-muted);">${ev.created_at}</small></td>
+                <td><span class="status-badge" style="background:rgba(0,242,254,0.15); color:var(--cyan-400);">${ev.event_type}</span></td>
+                <td><code>${ev.path}</code></td>
+                <td>${ev.device_type === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'}</td>
+                <td><small style="color:var(--text-secondary);">${ev.ip_address}</small></td>
+                <td><small style="color:var(--text-muted);">${JSON.stringify(ev.meta_data || {})}</small></td>
+              </tr>
+            `).join('');
+          }
+        }
+
+      } catch (err) {
+        console.error("Analytics fetch error:", err);
       }
     }
 
@@ -262,12 +469,23 @@
       const tbody = document.getElementById('inquiries-tbody');
       if (!tbody) return;
 
-      // Update counters
-      document.getElementById('count-all').textContent = allInquiries.length;
-      document.getElementById('count-new').textContent = allInquiries.filter(i => i.status === 'YENİ').length;
-      document.getElementById('count-review').textContent = allInquiries.filter(i => i.status === 'İNCELENİYOR').length;
-      document.getElementById('count-offer').textContent = allInquiries.filter(i => i.status === 'TEKLİF_VERİLDİ').length;
-      document.getElementById('count-approved').textContent = allInquiries.filter(i => i.status === 'ONAYLANDI').length;
+      // Update KPI counters
+      const countAll = allInquiries.length;
+      const countNew = allInquiries.filter(i => i.status === 'YENİ').length;
+      const countReview = allInquiries.filter(i => i.status === 'İNCELENİYOR').length;
+      const countOffer = allInquiries.filter(i => i.status === 'TEKLİF_VERİLDİ').length;
+      const countApproved = allInquiries.filter(i => i.status === 'ONAYLANDI').length;
+
+      document.getElementById('kpi-total-inquiries').textContent = countAll;
+      document.getElementById('kpi-new-inquiries').textContent = countNew;
+      document.getElementById('kpi-offer-inquiries').textContent = countOffer;
+      document.getElementById('kpi-approved-inquiries').textContent = countApproved;
+
+      document.getElementById('count-all').textContent = countAll;
+      document.getElementById('count-new').textContent = countNew;
+      document.getElementById('count-review').textContent = countReview;
+      document.getElementById('count-offer').textContent = countOffer;
+      document.getElementById('count-approved').textContent = countApproved;
 
       const filtered = currentFilter === 'ALL' 
         ? allInquiries 
@@ -280,17 +498,19 @@
 
       tbody.innerHTML = filtered.map(item => {
         const dateStr = new Date(item.created_at).toLocaleDateString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        const waMsg = encodeURIComponent(`Merhaba ${item.full_name}, Levitas Enterprise kurumsal talep başvurunuz hakkında görüşmek üzere yazıyorum.`);
+        const phoneClean = item.phone ? item.phone.replace(/[^0-9]/g, '') : '';
         return `
           <tr>
             <td><strong style="color:var(--electric-cyan);">#${item.id}</strong></td>
             <td><small style="color:var(--text-muted);">${dateStr}</small></td>
             <td>
               <strong>${item.full_name}</strong>
-              <div style="font-size:0.78rem; color:var(--text-secondary);">${item.company_name || 'Bireysel'}</div>
+              <div style="font-size:0.78rem; color:var(--text-secondary);">${item.company_name || 'Bireysel / Kurum Belirtilmedi'}</div>
             </td>
             <td>
               <div><a href="mailto:${item.email}" style="color:var(--text-primary); text-decoration:underline;">${item.email}</a></div>
-              <small style="color:var(--emerald-400);">${item.phone || '-'}</small>
+              ${phoneClean ? `<a href="https://wa.me/${phoneClean}?text=${waMsg}" target="_blank" style="color:var(--emerald-400); font-size:0.8rem; display:inline-flex; align-items:center; gap:3px; margin-top:2px;">💬 ${item.phone}</a>` : '<small style="color:var(--text-muted);">-</small>'}
             </td>
             <td>
               <div style="font-weight:600;">${item.project_type}</div>
@@ -319,10 +539,16 @@
       const content = document.getElementById('modal-content');
       document.getElementById('modal-title').textContent = `Talep #${item.id} — ${item.full_name}`;
 
+      const phoneClean = item.phone ? item.phone.replace(/[^0-9]/g, '') : '';
+      const waMsg = encodeURIComponent(`Merhaba ${item.full_name}, Levitas Enterprise kurumsal talep başvurunuz hakkında görüşmek üzere yazıyorum.`);
+
       content.innerHTML = `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; background:rgba(0,0,0,0.3); padding:1rem; border-radius:var(--radius-md);">
           <div><strong style="color:var(--text-muted);">E-posta:</strong> ${item.email}</div>
-          <div><strong style="color:var(--text-muted);">Telefon:</strong> ${item.phone || '-'}</div>
+          <div>
+            <strong style="color:var(--text-muted);">Telefon:</strong> ${item.phone || '-'}
+            ${phoneClean ? `<a href="https://wa.me/${phoneClean}?text=${waMsg}" target="_blank" style="color:var(--emerald-400); margin-left:8px; font-weight:600;">[WhatsApp Aç]</a>` : ''}
+          </div>
           <div><strong style="color:var(--text-muted);">Şirket:</strong> ${item.company_name || '-'}</div>
           <div><strong style="color:var(--text-muted);">Proje Türü:</strong> ${item.project_type}</div>
           <div><strong style="color:var(--text-muted);">Tahmini Bütçe:</strong> ${item.budget_range}</div>
@@ -349,8 +575,9 @@
           <textarea id="modal-admin-notes" class="form-control" placeholder="Müşteri görüşme notları veya teklif detayları...">${item.admin_notes || ''}</textarea>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:1rem;">
-          <button onclick="saveStatusChange(${item.id})" class="btn btn-primary">Kaydet</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+          <button onclick="deleteInquiry(${item.id})" class="btn btn-sm" style="background:rgba(244,63,94,0.15); color:#f43f5e; border:1px solid rgba(244,63,94,0.3);">🗑️ Talebi Sil</button>
+          <button onclick="saveStatusChange(${item.id})" class="btn btn-primary">Kaydet &amp; Kapat</button>
         </div>
       `;
 
@@ -371,6 +598,21 @@
         if (!res.ok) throw new Error('Güncelleme başarısız');
         
         showToast('Talep durumu güncellendi', 'success');
+        closeDetailModal();
+        fetchInquiries();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function deleteInquiry(id) {
+      if (!confirm(`Talep #${id} kaydını silmek istediğinize emin misiniz?`)) return;
+      try {
+        const res = await fetch(`/api/admin/inquiries/${id}?key=${encodeURIComponent(activeAdminKey)}`, {
+          method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Silme işlemi başarısız');
+        showToast(`Talep #${id} silindi`, 'success');
         closeDetailModal();
         fetchInquiries();
       } catch (err) {
@@ -407,3 +649,4 @@
   </script>
 </body>
 </html>
+

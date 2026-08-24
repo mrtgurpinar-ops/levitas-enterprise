@@ -3,20 +3,26 @@ import sys
 from datetime import datetime
 from typing import List, Optional
 from fastapi import FastAPI, Request, Depends, HTTPException, Header, status
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 
 # Import models & database with flexible fallback
 try:
     from database import engine, Base, get_db
-    from models import Inquiry, InquiryCreate, InquiryResponse, StatusUpdateRequest
+    from models import (
+        Inquiry, InquiryCreate, InquiryResponse, StatusUpdateRequest,
+        VisitorEvent, AnalyticsEventCreate
+    )
 except ModuleNotFoundError:
     from projects.levitas_enterprise.database import engine, Base, get_db
-    from projects.levitas_enterprise.models import Inquiry, InquiryCreate, InquiryResponse, StatusUpdateRequest
+    from projects.levitas_enterprise.models import (
+        Inquiry, InquiryCreate, InquiryResponse, StatusUpdateRequest,
+        VisitorEvent, AnalyticsEventCreate
+    )
 
 # Initialize database schema safely
 try:
@@ -70,9 +76,9 @@ except Exception as e:
     templates = None
 
 # App configuration
-VERSION = "v7.44.0"
+VERSION = "v7.46.0"
 WHATSAPP_PHONE = os.environ.get("WHATSAPP_PHONE", "905555105635")
-CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "mrtgurpinar@gmail.com")
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "contact@levitas.engineering")
 ADMIN_KEY = os.environ.get("ADMIN_KEY", "levitas2026")
 
 # Dependency for admin authentication
@@ -90,8 +96,19 @@ def verify_admin_key(
 
 
 # ==========================================
-# PAGE ROUTES (HTML)
+# PAGE & SYSTEM ROUTES
 # ==========================================
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def serve_robots_txt():
+    """Block search engines from crawling the unlisted administration portal."""
+    content = (
+        "User-agent: *\n"
+        "Disallow: /admin\n"
+        "Disallow: /api/admin/\n"
+        "Allow: /\n"
+    )
+    return PlainTextResponse(content=content)
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_home(request: Request):
@@ -160,6 +177,30 @@ async def serve_admin(request: Request):
 # PUBLIC API ENDPOINTS
 # ==========================================
 
+@app.post("/api/analytics/track", status_code=status.HTTP_200_OK)
+async def track_visitor_event(
+    payload: AnalyticsEventCreate,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Lightweight event tracking for visitor analytics and funnel conversion."""
+    client_ip = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent", "")[:500]
+    
+    event = VisitorEvent(
+        event_type=payload.event_type.strip().lower(),
+        path=payload.path or "/",
+        referrer=payload.referrer[:255] if payload.referrer else None,
+        user_agent=user_agent,
+        device_type=payload.device_type or "desktop",
+        meta_data=payload.meta_data or {},
+        ip_address=client_ip
+    )
+    db.add(event)
+    db.commit()
+    return {"status": "ok", "event_id": event.id}
+
+
 @app.post("/api/inquiry", response_model=InquiryResponse, status_code=status.HTTP_201_CREATED)
 async def create_inquiry(
     payload: InquiryCreate,
@@ -184,6 +225,17 @@ async def create_inquiry(
     )
     
     db.add(new_inquiry)
+    
+    # Auto log analytics event
+    auto_event = VisitorEvent(
+        event_type="form_submit",
+        path="/api/inquiry",
+        device_type="web",
+        meta_data={"project_type": payload.project_type, "budget_range": payload.budget_range},
+        ip_address=client_ip
+    )
+    db.add(auto_event)
+    
     db.commit()
     db.refresh(new_inquiry)
     
@@ -205,6 +257,65 @@ async def health_check():
 # ==========================================
 # ADMIN API ENDPOINTS (PROTECTED)
 # ==========================================
+
+@app.get("/api/admin/analytics/summary")
+async def get_analytics_summary(
+    key: Optional[str] = None,
+    x_admin_key: Optional[str] = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Executive visitor analytics summary and conversion metrics."""
+    verify_admin_key(x_admin_key=x_admin_key, admin_key=key)
+    
+    total_events = db.query(VisitorEvent).count()
+    pageviews = db.query(VisitorEvent).filter(VisitorEvent.event_type == "pageview").count()
+    calc_uses = db.query(VisitorEvent).filter(VisitorEvent.event_type == "calc_use").count()
+    form_submits = db.query(VisitorEvent).filter(VisitorEvent.event_type == "form_submit").count()
+    total_inquiries = db.query(Inquiry).count()
+    
+    # Device breakdown
+    mobile_count = db.query(VisitorEvent).filter(VisitorEvent.device_type == "mobile").count()
+    desktop_count = db.query(VisitorEvent).filter(VisitorEvent.device_type == "desktop").count()
+    
+    # Conversion Rate
+    conversion_rate = round((total_inquiries / pageviews * 100), 2) if pageviews > 0 else 0.0
+    
+    # Recent events stream (last 15)
+    recent_events_raw = db.query(VisitorEvent).order_by(desc(VisitorEvent.created_at)).limit(15).all()
+    recent_events = [
+        {
+            "id": ev.id,
+            "event_type": ev.event_type,
+            "path": ev.path,
+            "device_type": ev.device_type,
+            "ip_address": ev.ip_address or "—",
+            "meta_data": ev.meta_data or {},
+            "created_at": ev.created_at.strftime("%d.%m.%Y %H:%M:%S") if ev.created_at else ""
+        }
+        for ev in recent_events_raw
+    ]
+    
+    # Architecture interest distribution
+    inquiries = db.query(Inquiry).all()
+    arch_counts = {}
+    for inq in inquiries:
+        ptype = inq.project_type or "Diğer"
+        arch_counts[ptype] = arch_counts.get(ptype, 0) + 1
+        
+    return {
+        "pageviews": pageviews,
+        "calc_uses": calc_uses,
+        "form_submits": form_submits,
+        "total_inquiries": total_inquiries,
+        "conversion_rate": conversion_rate,
+        "device_breakdown": {
+            "mobile": mobile_count,
+            "desktop": desktop_count
+        },
+        "arch_counts": arch_counts,
+        "recent_events": recent_events
+    }
+
 
 @app.get("/api/admin/inquiries", response_model=List[InquiryResponse])
 async def list_inquiries(
@@ -275,3 +386,4 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT") or 8080)
     print(f"[*] Levitas Enterprise başlatılıyor... Port: {port}")
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+

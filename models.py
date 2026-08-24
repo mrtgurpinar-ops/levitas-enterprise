@@ -61,3 +61,27 @@ class InquiryResponse(BaseModel):
 class StatusUpdateRequest(BaseModel):
     status: str
     admin_notes: Optional[str] = None
+
+
+# Analytics / Visitor Event SQLAlchemy Model
+class VisitorEvent(Base):
+    __tablename__ = "visitor_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    event_type = Column(String(50), nullable=False, index=True)  # pageview, calc_use, form_start, form_submit
+    path = Column(String(255), default="/")
+    referrer = Column(String(255), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    device_type = Column(String(50), default="desktop")  # mobile, tablet, desktop
+    meta_data = Column(JSON, nullable=True)
+    ip_address = Column(String(50), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AnalyticsEventCreate(BaseModel):
+    event_type: str = Field(..., description="Olay türü: pageview, calc_use, form_start, form_submit")
+    path: Optional[str] = Field("/", description="Ziyaret edilen URL yolu")
+    referrer: Optional[str] = Field(None, description="Trafik kaynağı")
+    device_type: Optional[str] = Field("desktop", description="Cihaz türü: mobile, tablet, desktop")
+    meta_data: Optional[dict] = Field(default_factory=dict, description="Olay meta verisi (örn: hesaplanan mimari)")
+

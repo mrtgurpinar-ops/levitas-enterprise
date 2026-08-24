@@ -66,7 +66,7 @@ function initProjectCalculator() {
     return num.toLocaleString('tr-TR') + ' ₺';
   }
 
-  // 4. Apply to Inquiry Form
+    // 4. Apply to Inquiry Form
   if (btnApply) {
     btnApply.addEventListener('click', () => {
       const inquirySection = document.getElementById('inquiry');
@@ -84,9 +84,27 @@ function initProjectCalculator() {
         }
       }
 
+      // Auto-select budget range based on calculated minimum
+      let totalMin = currentBasePrice;
+      addonCheckboxes.forEach(chk => {
+        if (chk.checked) totalMin += parseInt(chk.getAttribute('data-price') || "0", 10);
+      });
+
+      if (budgetRangeSelect) {
+        if (totalMin <= 120000) {
+          budgetRangeSelect.value = "65.000 ₺ - 120.000 ₺";
+        } else if (totalMin <= 250000) {
+          budgetRangeSelect.value = "120.000 ₺ - 250.000 ₺";
+        } else if (totalMin <= 450000) {
+          budgetRangeSelect.value = "250.000 ₺ - 450.000 ₺";
+        } else {
+          budgetRangeSelect.value = "450.000 ₺+";
+        }
+      }
+
       // Add prefill text to details textarea
       const detailsTextarea = document.getElementById('projectDetails');
-      if (detailsTextarea && !detailsTextarea.value) {
+      if (detailsTextarea) {
         const checkedAddons = [];
         addonCheckboxes.forEach(chk => {
           if (chk.checked) {
@@ -95,7 +113,15 @@ function initProjectCalculator() {
           }
         });
 
-        detailsTextarea.value = `Hesaplayıcıdan Seçilen Kapsam: ${currentTypeName}.\nEk Modüller: ${checkedAddons.length > 0 ? checkedAddons.join(', ') : 'Temel Kurumsal Paket'}.\n\nLütfen projemizin detaylı teknik mimarisi için ön görüşme başlatınız.`;
+        detailsTextarea.value = `Hesaplayıcıdan Seçilen Kapsam: ${currentTypeName}.\nEk Modüller: ${checkedAddons.length > 0 ? checkedAddons.join(', ') : 'Temel Kurumsal Paket'}.\nTahmini Bütçe: ${priceDisplay ? priceDisplay.textContent : 'Belirtildi'}.\n\nLütfen projemizin mimari detayları için ön görüşme başlatınız.`;
+      }
+
+      // Track analytics event
+      if (typeof trackEvent === 'function') {
+        trackEvent('calc_use', {
+          architecture: currentTypeName,
+          estimated_budget: priceDisplay ? priceDisplay.textContent : ''
+        });
       }
     });
   }
@@ -103,3 +129,4 @@ function initProjectCalculator() {
   // Run initial calculation
   updateCalculations();
 }
+
